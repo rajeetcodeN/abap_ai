@@ -1,3 +1,8 @@
+*&---------------------------------------------------------------------*
+*& Class ZCL_HELLO_BTP
+*& Purpose: SAP BTP ABAP Cloud Demo & Flight Analytics Engine
+*& Note: Antigravity edit pushed from VS Code to Git
+*&---------------------------------------------------------------------*
 CLASS zcl_hello_btp DEFINITION
   PUBLIC
   FINAL
@@ -27,8 +32,12 @@ CLASS zcl_hello_btp IMPLEMENTATION.
 
   METHOD if_oo_adt_classrun~main.
     TRY.
+        " -----------------------------------------------------------------
+        " [Antigravity AI] Edited and pushed from VS Code to Git
+        " -----------------------------------------------------------------
         out->write( |============================================================| ).
         out->write( | SAP BTP ABAP CLOUD - FLIGHT ANALYTICS ENGINE               | ).
+        out->write( | [Antigravity AI] Edited and pushed from VS Code to Git!     | ).
         out->write( | Developer: { cl_abap_context_info=>get_user_formatted_name( ) } | ).
         out->write( | System Date: { cl_abap_context_info=>get_system_date( ) DATE = USER } | ).
         out->write( |============================================================| ).
