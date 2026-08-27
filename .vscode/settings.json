@@ -1,0 +1,18 @@
+{
+  "files.associations": {
+    "*.clas.abap": "abap",
+    "*.prog.abap": "abap",
+    "*.intf.abap": "abap",
+    "*.ddls.asddls": "cds"
+  },
+  "abapfs.remote": {
+    "BTP_TRIAL": {
+      "url": "https://a4796127-12c7-4a21-ae82-e3ced4ab9c3d.abap.us10.hana.ondemand.com",
+      "username": "BPT_TRIAL",
+      "client": "100",
+      "language": "en",
+      "allowSelfSigned": false
+    }
+  }
+}
+
