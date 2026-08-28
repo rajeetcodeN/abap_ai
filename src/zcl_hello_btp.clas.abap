@@ -1,7 +1,7 @@
 *&---------------------------------------------------------------------*
 *& Class ZCL_HELLO_BTP
-*& Purpose: SAP BTP ABAP Cloud - Travel & Customer Analytics Engine
-*& Version: 2.0 - Live AI Upgrade from Antigravity
+*& Purpose: SAP BTP ABAP Cloud - Enterprise Travel & Customer Analytics
+*& Version: 3.0 - Executive AI Dashboard with Loyalty Tier Engine
 *&---------------------------------------------------------------------*
 CLASS zcl_hello_btp DEFINITION
   PUBLIC
@@ -22,6 +22,7 @@ CLASS zcl_hello_btp DEFINITION
         total_price    TYPE /dmo/total_price,
         currency_code  TYPE /dmo/currency_code,
         status_text    TYPE string,
+        loyalty_tier   TYPE string,
       END OF ty_travel_analytic,
       tt_travel_analytics TYPE STANDARD TABLE OF ty_travel_analytic WITH EMPTY KEY.
 
@@ -33,14 +34,14 @@ CLASS zcl_hello_btp IMPLEMENTATION.
 
   METHOD if_oo_adt_classrun~main.
     TRY.
-        out->write( |======================================================================| ).
-        out->write( |   SAP BTP ABAP CLOUD - TRAVEL & REVENUE ANALYTICS ENGINE [v2.0]   | ).
-        out->write( |   [Antigravity AI] Live Update Pushed to GitHub & Pulled to SAP!   | ).
-        out->write( |   Developer : { cl_abap_context_info=>get_user_formatted_name( ) } | ).
-        out->write( |   Timestamp : { cl_abap_context_info=>get_system_date( ) DATE = USER } | ).
-        out->write( |======================================================================| ).
+        out->write( |========================================================================================| ).
+        out->write( |        SAP BTP ABAP CLOUD - ENTERPRISE TRAVEL & REVENUE DASHBOARD [v3.0]              | ).
+        out->write( |        [Antigravity AI] Live Enterprise Customer Loyalty & Intelligence Engine        | ).
+        out->write( |        Logged in as : { cl_abap_context_info=>get_user_formatted_name( ) }           | ).
+        out->write( |        Execution Time: { cl_abap_context_info=>get_system_date( ) DATE = USER }      | ).
+        out->write( |========================================================================================| ).
 
-        " 1. Query live database records (Travel Orders joined with Customer Master)
+        " 1. Query Live Travel Orders with Customer Master Data
         SELECT FROM /dmo/travel AS travel
           INNER JOIN /dmo/customer AS customer
             ON travel~customer_id = customer~customer_id
@@ -63,7 +64,7 @@ CLASS zcl_hello_btp IMPLEMENTATION.
           RETURN.
         ENDIF.
 
-        " 2. Transform and enrich records with business descriptions
+        " 2. Transform Data with Business Status Badges & Customer Loyalty Tiers
         DATA lt_analytics TYPE tt_travel_analytics.
 
         lt_analytics = VALUE #(
@@ -77,15 +78,20 @@ CLASS zcl_hello_btp IMPLEMENTATION.
             total_price   = ls_row-total_price
             currency_code = ls_row-currency_code
             status_text   = COND #(
-              WHEN ls_row-status = 'A' THEN 'Confirmed (A)'
-              WHEN ls_row-status = 'O' THEN 'Pending (O)'
-              WHEN ls_row-status = 'X' THEN 'Cancelled (X)'
+              WHEN ls_row-status = 'A' THEN 'Confirmed [A]'
+              WHEN ls_row-status = 'O' THEN 'Pending   [O]'
+              WHEN ls_row-status = 'X' THEN 'Cancelled [X]'
               ELSE 'Other' )
+            loyalty_tier  = COND #(
+              WHEN ls_row-total_price >= 8000 THEN 'Platinum VIP'
+              WHEN ls_row-total_price >= 5000 THEN 'Gold Tier'
+              WHEN ls_row-total_price >= 3000 THEN 'Silver Tier'
+              ELSE 'Standard' )
           )
         ).
 
-        " 3. Output Formatted Customer & Travel Booking Table
-        out->write( 'Top 10 High-Value Travel Bookings:' ).
+        " 3. Output Formatted Customer Travel Dataset
+        out->write( 'Top 10 High-Value Travel Bookings with Loyalty Classification:' ).
         out->write( lt_analytics ).
 
         " 4. Calculate Aggregate Financial KPIs using Modern ABAP REDUCE
@@ -95,10 +101,16 @@ CLASS zcl_hello_btp IMPLEMENTATION.
           WHERE ( currency_code = 'EUR' )
           NEXT total = total + ls_item-total_price ).
 
+        DATA(lv_total_revenue_usd) = REDUCE /dmo/total_price(
+          INIT total = 0
+          FOR ls_item IN lt_analytics
+          WHERE ( currency_code = 'USD' )
+          NEXT total = total + ls_item-total_price ).
+
         DATA(lv_confirmed_orders) = REDUCE i(
           INIT count = 0
           FOR ls_item IN lt_analytics
-          WHERE ( status_text = 'Confirmed (A)' )
+          WHERE ( status_text = 'Confirmed [A]' )
           NEXT count = count + 1 ).
 
         DATA(lv_total_orders) = lines( lt_analytics ).
@@ -108,23 +120,25 @@ CLASS zcl_hello_btp IMPLEMENTATION.
           THEN lv_total_revenue_eur / lv_total_orders
           ELSE 0 ).
 
-        out->write( |----------------------------------------------------------------------| ).
-        out->write( | EXECUTIVE REVENUE & PERFORMANCE SUMMARY:                             | ).
-        out->write( | • Total Sample Revenue (EUR) : { lv_total_revenue_eur NUMBER = USER } EUR | ).
-        out->write( | • Average Order Value (EUR)  : { lv_avg_order_value NUMBER = USER } EUR | ).
-        out->write( | • Total Bookings Evaluated   : { lv_total_orders } orders | ).
-        out->write( | • Confirmed Booking Rate     : { ( CONV decfloat34( lv_confirmed_orders ) / lv_total_orders ) * 100 DECIMALS = 2 }% ({ lv_confirmed_orders }/{ lv_total_orders }) | ).
+        out->write( |----------------------------------------------------------------------------------------| ).
+        out->write( | 📊 EXECUTIVE FINANCIAL & OPERATIONAL KPIS:                                              | ).
+        out->write( | • Total Sample Revenue (EUR) : { lv_total_revenue_eur NUMBER = USER } EUR               | ).
+        out->write( | • Total Sample Revenue (USD) : { lv_total_revenue_usd NUMBER = USER } USD               | ).
+        out->write( | • Average EUR Booking Value  : { lv_avg_order_value NUMBER = USER } EUR                 | ).
+        out->write( | • Total Bookings Evaluated   : { lv_total_orders } orders                               | ).
+        out->write( | • Confirmed Order Rate       : { ( CONV decfloat34( lv_confirmed_orders ) / lv_total_orders ) * 100 DECIMALS = 2 }% ({ lv_confirmed_orders }/{ lv_total_orders }) | ).
 
-        " 5. Display Top 3 VIP Bookings Leaderboard
-        out->write( |----------------------------------------------------------------------| ).
-        out->write( | 🏆 VIP HIGH-VALUE CUSTOMERS LEADERBOARD:                             | ).
+        " 5. Display Top 3 VIP Customers Hall of Fame
+        out->write( |----------------------------------------------------------------------------------------| ).
+        out->write( | 🏆 VIP HIGH-VALUE CUSTOMERS HALL OF FAME:                                              | ).
         LOOP AT lt_analytics INTO DATA(ls_vip) TO 3.
-          out->write( | #{ sy-tabix } | &
-                      | Customer: { ls_vip-customer_name WIDTH = 25 } | &
+          out->write( | Rank #{ sy-tabix } | &
+                      | Tier: { ls_vip-loyalty_tier WIDTH = 14 } | &
+                      | Customer: { ls_vip-customer_name WIDTH = 22 } | &
                       | Location: { ls_vip-city }, { ls_vip-country_code } | &
-                      | Amount: { ls_vip-total_price NUMBER = USER } { ls_vip-currency_code } | ).
+                      | Value: { ls_vip-total_price NUMBER = USER } { ls_vip-currency_code } | ).
         ENDLOOP.
-        out->write( |======================================================================| ).
+        out->write( |========================================================================================| ).
 
       CATCH cx_root INTO DATA(lx_error).
         out->write( |Error encountered: { lx_error->get_text( ) }| ).
