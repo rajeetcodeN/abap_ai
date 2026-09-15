@@ -1,0 +1,36 @@
+{
+  "name": "mcp-sap-adt",
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) server for SAP ABAP Development Tools (ADT)",
+  "main": "dist/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "node dist/index.js",
+    "test:ping": "node dist/test-ping.js"
+  },
+  "keywords": [
+    "mcp",
+    "sap",
+    "abap",
+    "adt",
+    "antigravity"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "axios": "^1.7.9",
+    "axios-cookiejar-support": "^5.0.5",
+    "dotenv": "^16.4.7",
+    "tough-cookie": "^5.1.2",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "@types/tough-cookie": "^4.0.5",
+    "@types/xml2js": "^0.4.14",
+    "typescript": "^5.8.2"
+  }
+}
