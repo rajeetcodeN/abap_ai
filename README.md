@@ -66,13 +66,13 @@ flowchart TD
     Orchestrator --> SecReviewer
     Orchestrator --> QAAgent
 
-    DevAgent -->|Generate and Refactor| Src
-    Src <-->|Commit and Push| Git
-    Git <-->|Push / Pull Sync| abapGit
+    DevAgent -->|"Generate and Refactor"| Src
+    Src <-->|"Commit and Push"| Git
+    Git <-->|"Push / Pull Sync"| abapGit
 
-    QAAgent -->|Tool Calls| MCPCore
+    QAAgent -->|"Tool Calls"| MCPCore
     MCPCore --> ADTClient
-    ADTClient -->|HTTP/HTTPS (Port 8000/44300)| ICF
+    ADTClient -->|"HTTP / HTTPS Port 8000 / 44300"| ICF
     ICF --> Compiler
     ICF --> AUnitEngine
     ICF --> DDIC
