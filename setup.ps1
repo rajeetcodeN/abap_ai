@@ -7,15 +7,15 @@
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "`n🚀 Starting abap_ai automated setup..." -ForegroundColor Cyan
+Write-Host "`nStarting abap_ai automated setup..." -ForegroundColor Cyan
 
 # 1. Check Node.js
 Write-Host "`n[1/5] Checking Node.js runtime..." -ForegroundColor Yellow
 try {
     $nodeVersion = node -v
-    Write-Host "  ✅ Node.js is installed ($nodeVersion)" -ForegroundColor Green
+    Write-Host "  [OK] Node.js is installed ($nodeVersion)" -ForegroundColor Green
 } catch {
-    Write-Error "❌ Node.js is not found in PATH! Please install Node.js v18+ from https://nodejs.org"
+    Write-Error "[ERROR] Node.js is not found in PATH! Please install Node.js v18+ from https://nodejs.org"
     exit 1
 }
 
@@ -25,7 +25,7 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $mcpDir = Join-Path $scriptDir "mcp-sap-adt"
 
 if (-not (Test-Path $mcpDir)) {
-    Write-Error "❌ Directory '$mcpDir' does not exist!"
+    Write-Error "[ERROR] Directory '$mcpDir' does not exist!"
     exit 1
 }
 
@@ -35,7 +35,7 @@ try {
     npm install
     Write-Host "  -> Running npm run build..."
     npm run build
-    Write-Host "  ✅ MCP server compiled successfully!" -ForegroundColor Green
+    Write-Host "  [OK] MCP server compiled successfully!" -ForegroundColor Green
 } finally {
     Pop-Location
 }
@@ -48,11 +48,11 @@ $envExample = Join-Path $mcpDir ".env.example"
 if (-not (Test-Path $envFile)) {
     if (Test-Path $envExample) {
         Copy-Item $envExample $envFile
-        Write-Host "  ✅ Created .env from .env.example" -ForegroundColor Green
-        Write-Host "  ⚠️  IMPORTANT: Please edit '$envFile' to set your SAP host, user & password!" -ForegroundColor Magenta
+        Write-Host "  [OK] Created .env from .env.example" -ForegroundColor Green
+        Write-Host "  [NOTICE] Please edit '$envFile' to set your SAP host, user & password!" -ForegroundColor Magenta
     }
 } else {
-    Write-Host "  ✅ Existing .env found" -ForegroundColor Green
+    Write-Host "  [OK] Existing .env found" -ForegroundColor Green
 }
 
 # 4. Automatically Register in Antigravity mcp_config.json
@@ -76,7 +76,6 @@ if (Test-Path $mcpConfigFile) {
         if ($rawJson -and $rawJson.Trim().Length -gt 0) {
             $parsed = $rawJson | ConvertFrom-Json
             if ($parsed.mcpServers) {
-                # Convert PSObject to hashtable
                 foreach ($prop in $parsed.mcpServers.psobject.Properties) {
                     $configObj.mcpServers[$prop.Name] = $prop.Value
                 }
@@ -96,12 +95,12 @@ $configObj.mcpServers["sap-adt"] = @{
 $updatedJson = $configObj | ConvertTo-Json -Depth 10
 Set-Content -Path $mcpConfigFile -Value $updatedJson -Encoding utf8
 
-Write-Host "  ✅ Registered 'sap-adt' MCP server in: $mcpConfigFile" -ForegroundColor Green
+Write-Host "  [OK] Registered 'sap-adt' MCP server in: $mcpConfigFile" -ForegroundColor Green
 Write-Host "  Target script: $mcpIndexPath" -ForegroundColor Gray
 
 # 5. Summary
 Write-Host "`n==============================================================================" -ForegroundColor Green
-Write-Host "🎉 abap_ai Setup Complete!" -ForegroundColor Green
+Write-Host "abap_ai Setup Complete!" -ForegroundColor Green
 Write-Host "==============================================================================" -ForegroundColor Green
 Write-Host "Next steps:"
 Write-Host "  1. Open '$envFile' and configure your SAP URL, client, user, and password."

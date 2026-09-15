@@ -6,16 +6,16 @@
 set -e
 
 echo ""
-echo "🚀 Starting abap_ai automated setup..."
+echo "Starting abap_ai automated setup..."
 echo ""
 
 # 1. Check Node.js
 echo "[1/5] Checking Node.js runtime..."
 if ! command -v node &> /dev/null; then
-    echo "❌ Node.js is not installed! Please install Node.js v18+ from https://nodejs.org"
+    echo "[ERROR] Node.js is not installed! Please install Node.js v18+ from https://nodejs.org"
     exit 1
 fi
-echo "  ✅ Node.js is installed ($(node -v))"
+echo "  [OK] Node.js is installed ($(node -v))"
 
 # 2. Install dependencies & build MCP server
 echo ""
@@ -24,14 +24,14 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 MCP_DIR="$SCRIPT_DIR/mcp-sap-adt"
 
 if [ ! -d "$MCP_DIR" ]; then
-    echo "❌ Directory '$MCP_DIR' does not exist!"
+    echo "[ERROR] Directory '$MCP_DIR' does not exist!"
     exit 1
 fi
 
 cd "$MCP_DIR"
 npm install
 npm run build
-echo "  ✅ MCP server compiled successfully!"
+echo "  [OK] MCP server compiled successfully!"
 
 # 3. Setup .env file
 echo ""
@@ -42,11 +42,11 @@ ENV_EXAMPLE="$MCP_DIR/.env.example"
 if [ ! -f "$ENV_FILE" ]; then
     if [ -f "$ENV_EXAMPLE" ]; then
         cp "$ENV_EXAMPLE" "$ENV_FILE"
-        echo "  ✅ Created .env from .env.example"
-        echo "  ⚠️  IMPORTANT: Please edit '$ENV_FILE' to set your SAP host, user & password!"
+        echo "  [OK] Created .env from .env.example"
+        echo "  [NOTICE] Please edit '$ENV_FILE' to set your SAP host, user & password!"
     fi
 else
-    echo "  ✅ Existing .env found"
+    echo "  [OK] Existing .env found"
 fi
 
 # 4. Automatically Register in Antigravity mcp_config.json
@@ -58,7 +58,6 @@ mkdir -p "$CONFIG_DIR"
 
 MCP_INDEX_PATH="$MCP_DIR/dist/index.js"
 
-# Use node to safely inject the configuration into mcp_config.json
 node -e "
 const fs = require('fs');
 const path = '$CONFIG_FILE';
@@ -77,13 +76,13 @@ data.mcpServers['sap-adt'] = {
 fs.writeFileSync(path, JSON.stringify(data, null, 2), 'utf8');
 "
 
-echo "  ✅ Registered 'sap-adt' MCP server in: $CONFIG_FILE"
+echo "  [OK] Registered 'sap-adt' MCP server in: $CONFIG_FILE"
 echo "  Target script: $MCP_INDEX_PATH"
 
 # 5. Summary
 echo ""
 echo "=============================================================================="
-echo "🎉 abap_ai Setup Complete!"
+echo "abap_ai Setup Complete!"
 echo "=============================================================================="
 echo "Next steps:"
 echo "  1. Open '$ENV_FILE' and configure your SAP URL, client, user, and password."
