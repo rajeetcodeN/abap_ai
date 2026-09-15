@@ -159,38 +159,35 @@ sequenceDiagram
     actor Dev as Developer
     participant AI as Antigravity AI
     participant MCP as mcp-sap-adt
-    participant SAP as SAP DEV System
+    participant SAP as SAP DEV
 
     Dev->>AI: "Create Loyalty Calculator ZCL_LOYALTY_CALC"
-    AI->>Dev: Explains scope and asks clarifying questions (edge cases, tier codes)
+    AI->>Dev: Explains scope & asks clarifying questions
     Dev-->>AI: Confirms business rules
 
-    rect rgb(240, 248, 255)
-    Note over AI,SAP: Autonomous Self-Healing Loop
-    AI->>AI: Generates Clean ABAP code and CL_AUNIT_ASSERT tests
-    AI->>MCP: Call sap_check_syntax
-    MCP->>SAP: Validate against SAP compiler
-    SAP-->>MCP: Returns error: Field DECIMALS 2 invalid
-    MCP-->>AI: Compiler error details (line 24)
-    AI->>AI: Auto-fixes code syntax to match SAP release
-    AI->>MCP: Call sap_check_syntax
-    MCP->>SAP: Validate against SAP compiler
-    SAP-->>MCP: Syntax OK
-    AI->>MCP: Call sap_write_class (update inactive buffer)
-    AI->>MCP: Call sap_run_unit_tests
-    MCP->>SAP: Execute AUnit test suite
-    SAP-->>MCP: Test failure: Negative amount did not throw exception
-    MCP-->>AI: Assertion failure details
-    AI->>AI: Adds missing validation and adjusts test double
-    AI->>MCP: Call sap_write_class and sap_run_unit_tests
-    SAP-->>MCP: All 3 Tests PASSED (100% Green)
+    loop Autonomous Self-Healing Loop
+        AI->>AI: Generate Clean ABAP & CL_AUNIT_ASSERT tests
+        AI->>MCP: Call sap_check_syntax
+        MCP->>SAP: Validate against SAP compiler
+        SAP-->>MCP: Compiler error on line 24
+        AI->>AI: Auto-fix code syntax for SAP release
+        AI->>MCP: Call sap_check_syntax
+        MCP->>SAP: Validate against SAP compiler
+        SAP-->>MCP: Syntax OK
+        AI->>MCP: Call sap_write_class (update inactive buffer)
+        AI->>MCP: Call sap_run_unit_tests
+        MCP->>SAP: Execute AUnit test suite
+        SAP-->>MCP: Test failure reported
+        AI->>AI: Adjust code & test assertion
+        AI->>MCP: Call sap_write_class & sap_run_unit_tests
+        SAP-->>MCP: All 3 Tests PASSED (100% Green)
     end
 
-    AI->>Dev: Presents verified diff and test report: "Proceed to activate and commit?"
+    AI->>Dev: Presents verified diff: "Proceed to activate?"
     Dev-->>AI: "Yes, activate"
     AI->>MCP: Call sap_activate_class
     MCP->>SAP: Activate in SAP Dictionary
-    AI->>AI: Git commit and branch update
+    AI->>AI: Git commit & branch update
 ```
 
 ---
