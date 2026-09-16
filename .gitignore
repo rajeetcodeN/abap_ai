@@ -11,6 +11,8 @@ package-lock.json
 dist/
 build/
 *.tsbuildinfo
+__pycache__/
+*.py[cod]
 
 # Logs
 *.log
@@ -19,3 +21,6 @@ npm-debug.log*
 # OS / IDE
 .DS_Store
 Thumbs.db
+
+# Separate Web App Repository
+web-app/
