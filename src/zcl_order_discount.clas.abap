@@ -10,7 +10,7 @@ CLASS zcl_order_discount DEFINITION
       tv_amount   TYPE p LENGTH 15 DECIMALS 2,
       tv_discount TYPE p LENGTH 5 DECIMALS 2.
 
-    METHODS calculate_discount
+    METHODS calculate
       IMPORTING
         iv_amount          TYPE tv_amount
       RETURNING
@@ -26,7 +26,7 @@ CLASS zcl_order_discount DEFINITION
 ENDCLASS.
 
 CLASS zcl_order_discount IMPLEMENTATION.
-  METHOD calculate_discount.
+  METHOD calculate.
     " Clean ABAP: Fail fast on invalid boundaries
     IF iv_amount < 0.
       RAISE EXCEPTION TYPE cx_sy_conversion_overflow.
