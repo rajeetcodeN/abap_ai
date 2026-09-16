@@ -5,9 +5,10 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_ORDER_DISCOUNT_LOOP</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Order Discount Calculator</DESCRIPT>
+    <DESCRIPT>Clean ABAP generated class</DESCRIPT>
     <STATE>1</STATE>
-    <CLCCLSDECL>X</CLCCLSDECL>
+    <CLSCCINCL>X</CLSCCINCL>
+    <FIXPT>X</FIXPT>
     <UNICODE>X</UNICODE>
    </VSEOCLASS>
   </asx:values>

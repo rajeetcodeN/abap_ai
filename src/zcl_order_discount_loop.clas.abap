@@ -4,35 +4,36 @@ CLASS zcl_order_discount_loop DEFINITION
   CREATE PUBLIC.
 
   PUBLIC SECTION.
-    TYPES ty_amount TYPE p LENGTH 15 DECIMALS 2.
+    INTERFACES if_amdp_marker_hdb OPTIONAL.
 
-    "! Calculates discount for a given order amount.
-    "! @parameter amount | Order net amount
-    "! @parameter discount | Calculated discount amount
-    "! @raising cx_abap_invalid_value | Raised if order amount is negative
+    TYPES:
+      tv_amount   TYPE p LENGTH 15 DECIMALS 2,
+      tv_discount TYPE p LENGTH 5 DECIMALS 2.
+
     METHODS calculate_discount
       IMPORTING
-        amount          TYPE ty_amount
+        iv_amount          TYPE tv_amount
       RETURNING
-        VALUE(discount) TYPE ty_amount
+        VALUE(rv_discount) TYPE tv_discount
       RAISING
-        cx_abap_invalid_value.
+        cx_sy_conversion_overflow.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
     CONSTANTS:
-      c_threshold_amount TYPE ty_amount VALUE '10000.00',
-      c_discount_rate    TYPE p LENGTH 5 DECIMALS 2 VALUE '0.15'.
+      c_threshold TYPE tv_amount VALUE '1000.00',
+      c_discount  TYPE tv_discount VALUE '10.00'.
 ENDCLASS.
 
 CLASS zcl_order_discount_loop IMPLEMENTATION.
   METHOD calculate_discount.
-    IF amount < 0.
-      RAISE EXCEPTION TYPE cx_abap_invalid_value.
+    " Clean ABAP: Fail fast on invalid boundaries
+    IF iv_amount < 0.
+      RAISE EXCEPTION TYPE cx_sy_conversion_overflow.
     ENDIF.
 
-    discount = COND #( WHEN amount >= c_threshold_amount
-                       THEN amount * c_discount_rate
-                       ELSE 0 ).
+    " Clean ABAP: COND expression replacing verbose IF-ELSE
+    rv_discount = COND #( WHEN iv_amount >= c_threshold THEN c_discount
+                          ELSE '0.00' ).
   ENDMETHOD.
 ENDCLASS.
