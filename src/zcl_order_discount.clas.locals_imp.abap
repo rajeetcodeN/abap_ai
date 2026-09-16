@@ -18,7 +18,7 @@ CLASS ltcl_zcl_order_discount_test IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_above_threshold.
-    DATA(lv_discount) = mo_cut->calculate( '1500.00' ).
+    DATA(lv_discount) = mo_cut->calculate_tax( '1500.00' ).
     cl_aunit_assert=>assert_equals(
       act = lv_discount
       exp = '10.00'
@@ -26,7 +26,7 @@ CLASS ltcl_zcl_order_discount_test IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_below_threshold.
-    DATA(lv_discount) = mo_cut->calculate( '500.00' ).
+    DATA(lv_discount) = mo_cut->calculate_tax( '500.00' ).
     cl_aunit_assert=>assert_equals(
       act = lv_discount
       exp = '0.00'
@@ -34,7 +34,7 @@ CLASS ltcl_zcl_order_discount_test IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_zero_amount.
-    DATA(lv_discount) = mo_cut->calculate( '0.00' ).
+    DATA(lv_discount) = mo_cut->calculate_tax( '0.00' ).
     cl_aunit_assert=>assert_equals(
       act = lv_discount
       exp = '0.00'
@@ -43,7 +43,7 @@ CLASS ltcl_zcl_order_discount_test IMPLEMENTATION.
 
   METHOD test_negative_amount.
     TRY.
-        mo_cut->calculate( '-50.00' ).
+        mo_cut->calculate_tax( '-50.00' ).
         cl_aunit_assert=>fail( msg = |Negative amount must raise exception| ).
       CATCH cx_sy_conversion_overflow.
         " Expected outcome
