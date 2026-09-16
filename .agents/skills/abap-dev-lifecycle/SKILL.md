@@ -1,84 +1,131 @@
 ---
 name: abap-dev-lifecycle
 description: >-
-  Use this skill whenever the user requests an ABAP feature, bug fix, refactor, or test creation.
-  It executes an autonomous 4-stage lifecycle: Requirements Clarification -> Clean ABAP Coding -> 
-  Automated Self-Healing Loop (Syntax & Unit Tests on SAP DEV via MCP) -> User Review & Activation Gate.
+  Executes the autonomous end-to-end development lifecycle for SAP ABAP code in this workspace.
+  Triggers when the user requests an ABAP feature, bug fix, refactor, performance optimization,
+  or unit test authoring. Manages requirements clarification, Clean ABAP code generation, in-memory
+  compiler syntax verification, automated ABAP Unit testing with self-healing, and human-in-the-loop
+  activation gates. Do NOT use for generic read-only questions where no code modifications are requested.
 ---
 
-# Autonomous ABAP Development Lifecycle & Self-Healing Loop
+# Autonomous ABAP Development Lifecycle Specification
 
-This skill guides the agent through an automated, closed-loop development process for SAP ABAP code using the `sap-adt` MCP server and abapGit.
+This skill prescribes the exact operational protocol, state machine transitions, and error-recovery procedures for generating, verifying, and activating ABAP software using the `sap-adt` MCP server and abapGit.
 
 ---
 
-## The 4-Stage Lifecycle
+## 1. Lifecycle State Machine
 
+The agent must advance through the lifecycle sequentially according to the following state transitions:
+
+```text
+[STATE: RECEIVE_REQUEST]
+           │
+           ▼
+[STATE: CLARIFY_REQUIREMENTS] ──(Ambiguities resolved)──┐
+           ▲                                             ▼
+           │ (Clarification needed)          [STATE: CODE_GENERATION]
+           └─────────────────────────────────────────────┤
+                                                         ▼
+                                             [STATE: SYNTAX_VERIFICATION]
+                                                         │
+                                           ┌─────────────┴─────────────┐
+                                     (Syntax OK)                 (Syntax Error)
+                                           │                           │
+                                           ▼                           ▼
+                               [STATE: TEST_VERIFICATION]   [Auto-Fix & Retry (Max 3)]
+                                           │
+                             ┌─────────────┴─────────────┐
+                        (All Passed)                (Test Failed)
+                             │                           │
+                             ▼                           ▼
+                 [STATE: HUMAN_APPROVAL_GATE]       [Auto-Fix & Retry (Max 3)]
+                             │
+                      (User Approves)
+                             │
+                             ▼
+                 [STATE: ACTIVATE_AND_COMMIT]
 ```
-[ User Prompt ]
-       │
-       ▼
-Stage 1: Requirements Breakdown & Clarifying Questions
-       │ (Explain requirement, ask edge-case questions, await user alignment)
-       ▼
-Stage 2: Code Generation & Unit Test Authoring
-       │ (Write src/*.clas.abap and src/*.clas.locals_imp.abap)
-       ▼
-Stage 3: Automated Self-Healing Loop (via MCP tools)
-  ┌──▶ 1. Call sap_check_syntax on SAP DEV
-  │    ├─ Syntax Error? ──▶ Inspect error line & fix code ──┐
-  │    └─ Syntax OK?                                        │
-  │    2. Call sap_write_class (to inactive buffer)         │
-  │    3. Call sap_run_unit_tests on SAP DEV                │
-  │    ├─ Test Failed?  ──▶ Inspect assertion & fix code ───┘
-  │    └─ All Passed?   ──▶ Exit loop
-  ▼
-Stage 4: Review & Activation Gate
-       │ (Present diff, syntax check & test report to user)
-       ▼
-[ User Confirms -> sap_activate_class -> Git commit ]
-```
 
 ---
 
-## Execution Instructions for the Agent
+## 2. Stage-by-Stage Operational Protocol
 
-### Stage 1: Requirements Breakdown & Clarification
-1. When a user requests a feature or change, **DO NOT immediately write final code**.
-2. **Explain the requirement:** Summarize the functional scope, target tables/entities, and business logic.
-3. **Ask targeted clarifying questions:**
-   - What are the boundary conditions (null/empty inputs, negative values)?
-   - Which error/exception behavior is expected (raise custom exception or return status)?
-   - Are there specific SAP authorization checks (`AUTHORITY-CHECK`) needed?
-4. Once the user aligns or confirms, proceed immediately to Stage 2.
+### Stage 1: Requirements Breakdown and Clarification (`STATE: CLARIFY_REQUIREMENTS`)
+* **Objective:** Prevent defective implementations by disambiguating business rules upfront.
+* **Protocol:**
+  1. Summarize the functional scope, target tables/entities, and business logic.
+  2. Ask 1 to 3 targeted clarifying questions regarding:
+     * Boundary conditions (e.g. zero, negative, or null values).
+     * Error behavior (e.g. custom exception class vs system error).
+     * Security authorization objects required (`AUTHORITY-CHECK`).
+  3. Await user confirmation before writing any code.
 
-### Stage 2: Code Generation (Clean ABAP)
-1. Write the main class definition and implementation in `src/<class_name>.clas.abap`.
-   - Use ABAP 7.40+/7.50+ constructs (`VALUE #()`, `CORRESPONDING #()`, inline `DATA(...)`).
-   - Keep methods short and focused on single responsibility.
-2. Write corresponding ABAP Unit test cases in `src/<class_name>.clas.locals_imp.abap`.
-   - Use `FOR TESTING` with `CL_AUNIT_ASSERT`.
-   - Include tests for both the happy path and edge cases.
+### Stage 2: Code and Unit Test Generation (`STATE: CODE_GENERATION`)
+* **Objective:** Produce high-quality, maintainable ABAP conforming to 7.50+ standards.
+* **File Separation:**
+  * **Main Class Definition & Implementation:** `src/<class_name>.clas.abap`
+  * **Local Helpers & Test Classes:** `src/<class_name>.clas.locals_imp.abap`
+  * **Class Metadata & Transport Headers:** `src/<class_name>.clas.xml`
+* **Clean ABAP Standards Checklist:**
+  * Use inline declarations `DATA(var) = ...` at point of assignment.
+  * Use constructor expressions: `VALUE #()`, `COND #()`, `SWITCH #()`, `CORRESPONDING #()`.
+  * Use string templates `|Text { var }|` instead of `CONCATENATE`.
+  * Use table expressions `lt_table[ key = value ]` instead of `READ TABLE`.
+  * Implement short, focused methods adhering to the Single Responsibility Principle.
+  * *Deep Reference:* See [Clean ABAP Patterns Reference](./references/clean-abap-patterns.md).
 
-### Stage 3: Automated Self-Healing Verification Loop
-Execute this automated loop without asking the user at every step:
+### Stage 3: Autonomous Self-Healing Verification Loop (`STATE: SYNTAX_VERIFICATION` and `STATE: TEST_VERIFICATION`)
+* **Objective:** Validate code against the live SAP DEV compiler and unit test runner without human intervention.
+* **Loop Constraints:** Maximum 3 autonomous remediation iterations per failure mode.
 
-1. **Syntax Check:**
-   - Call the MCP tool `sap_check_syntax` with the class name and generated code.
-   - **If syntax errors exist:** Read the compiler message, line number, and offset. Modify the source code to resolve the syntax error, and call `sap_check_syntax` again.
-   - Repeat until `isValid: true`.
+#### Step 3.1: In-Memory Syntax Verification
+1. Call MCP tool `sap_check_syntax` with target class name and source code.
+2. **If compiler returns errors (`isValid: false`):**
+   * Extract error line, offset, and compiler message.
+   * Apply matching remediation strategy from the [Error Recovery Matrix](./references/error-recovery-matrix.md).
+   * Update source code and call `sap_check_syntax` again.
+   * If error persists after 3 iterations, escalate to the user with diagnostic logs.
+3. **If compiler returns clean (`isValid: true`):** Advance to Step 3.2.
 
-2. **Inactive Buffer Write:**
-   - Call `sap_write_class` to update the inactive version of the class on SAP DEV.
+#### Step 3.2: Inactive Buffer Write
+1. Call MCP tool `sap_write_class` to update the inactive buffer on SAP DEV.
+2. Verify lock acquisition and buffer persistence.
 
-3. **ABAP Unit Tests:**
-   - Call `sap_run_unit_tests` to execute the unit tests on SAP DEV.
-   - **If any test fails:** Inspect the `failureMessage` and test method. Modify the code (or test double) to fix the failing assertion, write the buffer again, and re-run unit tests.
-   - Repeat until all tests report `passed`.
+#### Step 3.3: ABAP Unit Test Execution
+1. Call MCP tool `sap_run_unit_tests` for the class.
+2. **If any test fails (`failed > 0` or `errors > 0`):**
+   * Parse the failing test method and assertion message (`failureMessage`).
+   * Diagnose root cause (calculation error, boundary miss, or fixture issue).
+   * Modify the implementation in `src/<class_name>.clas.abap` or test double in `src/<class_name>.clas.locals_imp.abap`.
+   * Call `sap_write_class` and re-execute `sap_run_unit_tests`.
+   * Repeat until `failed == 0` and `errors == 0`.
+3. **If all tests pass:** Advance to Stage 4.
 
-### Stage 4: User Review & Activation Gate
-1. Present the final code diff, the successful syntax status, and the unit test summary to the user.
-2. Ask for explicit user confirmation: *"All syntax checks and unit tests passed on SAP DEV. May I proceed with activating the object on SAP and committing to Git?"*
-3. **On user approval:**
-   - Call `sap_activate_class` to activate the object in the SAP Data Dictionary.
-   - Run `git add` and `git commit` to commit the verified changes to the repository.
+### Stage 4: Human-in-the-Loop Activation Gate (`STATE: HUMAN_APPROVAL_GATE`)
+* **Mandatory Constraint:** The agent must NEVER call `sap_activate_class` without explicit human confirmation.
+* **Protocol:**
+  1. Present a concise summary containing:
+     * Verification status: Compiler Syntax Valid, Unit Tests Passed (total count).
+     * Diff of modified lines.
+  2. Prompt the user: *"All compiler syntax checks and ABAP Unit tests passed on SAP DEV. May I proceed with activating the object in SAP and committing to Git?"*
+
+### Stage 5: Activation and Version Control (`STATE: ACTIVATE_AND_COMMIT`)
+* **Protocol on User Approval:**
+  1. Call MCP tool `sap_activate_class` to activate the inactive buffer in the SAP Data Dictionary.
+  2. Verify activation result (`success: true`).
+  3. Execute Git commands to stage and commit modified files:
+     ```bash
+     git add src/
+     git commit -m "feat(<scope>): <concise description of verified change>"
+     ```
+  4. Confirm completion to the user.
+
+---
+
+## 3. Negative Boundaries
+
+* Do NOT use this skill for generic architectural questions that do not involve modifying code.
+* Do NOT bypass the syntax check step (`sap_check_syntax`) before writing to the SAP buffer.
+* Do NOT commit code to Git if unit tests have not passed.
+* Do NOT activate inactive objects on SAP DEV without explicit user approval.
