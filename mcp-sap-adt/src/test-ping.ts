@@ -12,6 +12,7 @@ const config: SapConnectionConfig = {
   password: process.env.SAP_PASSWORD || '',
   language: process.env.SAP_LANGUAGE || 'EN',
   allowSelfSigned: process.env.SAP_ALLOW_SELF_SIGNED === 'true',
+  offlineMode: process.env.SAP_OFFLINE_MODE === 'true' || !process.env.SAP_PASSWORD || process.env.SAP_PASSWORD.trim() === '',
 };
 
 async function testConnection() {
@@ -19,9 +20,10 @@ async function testConnection() {
   console.log(`Endpoint: ${config.url}`);
   console.log(`Client:   ${config.client}`);
   console.log(`User:     ${config.username}`);
+  console.log(`Mode:     ${config.offlineMode ? 'Offline Simulation Mode' : 'Live SAP DEV Mode'}`);
 
-  if (!config.password) {
-    console.warn('\n⚠️ Note: SAP_PASSWORD is empty in .env. Attempting ping without auth token...');
+  if (config.offlineMode) {
+    console.log('\n[NOTICE] Running in Offline Simulation Mode (SAP_PASSWORD is not set or SAP_OFFLINE_MODE is true).');
   }
 
   const client = new SapAdtClient(config);

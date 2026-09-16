@@ -5,6 +5,7 @@ export interface SapConnectionConfig {
   password?: string;
   language?: string;
   allowSelfSigned?: boolean;
+  offlineMode?: boolean;
 }
 
 export interface AdtMessage {

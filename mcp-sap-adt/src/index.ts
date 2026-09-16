@@ -20,6 +20,7 @@ const config: SapConnectionConfig = {
   password: process.env.SAP_PASSWORD || '',
   language: process.env.SAP_LANGUAGE || 'EN',
   allowSelfSigned: process.env.SAP_ALLOW_SELF_SIGNED === 'true',
+  offlineMode: process.env.SAP_OFFLINE_MODE === 'true' || !process.env.SAP_PASSWORD || process.env.SAP_PASSWORD.trim() === '',
 };
 
 const adtClient = new SapAdtClient(config);

@@ -10,7 +10,6 @@ This guide provides a comprehensive technical and operational breakdown of the *
 3. [Connecting to Your On-Premise SAP System](#3-connecting-to-your-on-premise-sap-system)
 4. [Dual-Mode Operation: Live SAP vs Offline Simulation](#4-dual-mode-operation-live-sap-vs-offline-simulation)
 5. [Capabilities Matrix: What It CAN DO vs What It CANNOT DO](#5-capabilities-matrix-what-it-can-do-vs-what-it-cannot-do)
-6. [Team Roles in the Lifecycle (Nosta, Sundara, Rajeet)](#6-team-roles-in-the-lifecycle)
 
 ---
 
@@ -19,34 +18,34 @@ This guide provides a comprehensive technical and operational breakdown of the *
 The lifecycle connects the initial business request directly to the SAP DEV system while maintaining strict quality gates and version control.
 
 ```text
-[ Sebastian Nosta ] ──(Voice or Text Requirement)──> [ n8n Intake Webhook ]
+[ Business Requester ] ──(Voice or Text Requirement)──> [ n8n Intake Webhook ]
                                                               │
                                                               ▼
                                                  [ Standardized JSON Ticket ]
                                                               │
                                                               ▼
-                                                    [ Sundara (SAP Expert) ]
-                                                 (Enriches tables, BAdIs, scope)
+                                                   [ SAP Lead / Expert ]
+                                              (Enriches tables, BAdIs, scope)
                                                               │
                                                               ▼
-                                                   [ Antigravity AI Engine ]
-                                                 (Mounts abap-dev-lifecycle)
+                                                    [ Antigravity AI Engine ]
+                                                  (Mounts abap-dev-lifecycle)
                                                               │
                                                               ▼
-                                                 [ Generates Clean ABAP in src/ ]
+                                                  [ Generates Clean ABAP in src/ ]
                                                               │
                                                               ▼
-                                       ┌──────────────────────────────────────────────┐
-                                       │ Autonomous Self-Healing Loop (mcp-sap-adt)   │
-                                       │ 1. Calls /sap/bc/adt/syntaxcheck             │
-                                       │ 2. Calls /sap/bc/adt/oo/classes (buffer)     │
-                                       │ 3. Calls /sap/bc/adt/abapunit/testruns       │
-                                       │ 4. Auto-fixes errors until 100% passed       │
-                                       └──────────────────────┬───────────────────────┘
+                                        ┌──────────────────────────────────────────────┐
+                                        │ Autonomous Self-Healing Loop (mcp-sap-adt)   │
+                                        │ 1. Calls /sap/bc/adt/syntaxcheck             │
+                                        │ 2. Calls /sap/bc/adt/oo/classes (buffer)     │
+                                        │ 3. Calls /sap/bc/adt/abapunit/testruns       │
+                                        │ 4. Auto-fixes errors until 100% passed       │
+                                        └──────────────────────┬───────────────────────┘
                                                               │
                                                               ▼
-                                                  [ Human Approval Gate ]
-                                                (Sundara / Rajeet review diff)
+                                                   [ Human Approval Gate ]
+                                               (Lead Developer reviews diff)
                                                               │
                                                               ▼
                                               [ Activation on SAP DEV & Git Push ]
@@ -170,14 +169,3 @@ To maintain enterprise safety, strict governance boundaries are enforced:
 * **CANNOT Activate Code Without Human Approval:** The AI is strictly barred by system rules from activating objects in the SAP dictionary without explicit developer confirmation in the chat.
 * **CANNOT Leak Credentials to Git:** Secrets stored in `.env` are protected by `.gitignore` and are never committed to version control.
 
----
-
-## 6. Team Roles in the Lifecycle
-
-| Role | Person | Responsibilities in the Workflow |
-|---|---|---|
-| **Requester** | Sebastian Nosta | Submits business requirements via n8n voice or text form. Reviews functional results in QA. |
-| **SAP Lead / Expert** | Sundara | Reviews technical feasibility, enriches table names and BAdI spots, approves specifications, and releases final CTS transports. |
-| **System Architect** | Rajeet | Maintains the Antigravity workspace, MCP bridge, and n8n workflow integrations. |
-| **AI Co-Pilot** | Antigravity / Claude | Generates Clean ABAP, runs syntax checks, writes unit tests, executes self-healing loop, and commits to Git. |
-| **SAP Basis Admin** | Basis Team | Verifies `/sap/bc/adt` is active in `SICF` (one-time setup). No custom code installation required. |
