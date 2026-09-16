@@ -352,3 +352,12 @@ abap_ai/
    git push origin feature/my-new-class
    ```
 6. Open a Pull Request on GitHub for team review.
+
+---
+
+## Documentation Links
+* [Developer Onboarding and Setup Guide (Windows and Mac)](file:///d:/SAP/DEVELOPER_GUIDE.md)
+* [Technical Architecture and Capabilities Reference](file:///d:/SAP/HOW_IT_WORKS.md)
+* [Clean ABAP Guidelines and Quality Safeguards](file:///d:/SAP/GEMINI.md)
+* [Autonomous Lifecycle Skill Specification](file:///d:/SAP/.agents/skills/abap-dev-lifecycle/SKILL.md)
+
