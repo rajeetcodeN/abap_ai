@@ -356,8 +356,10 @@ abap_ai/
 ---
 
 ## Documentation Links
+* [End-to-End Workflow and Capabilities Guide](file:///d:/SAP/END_TO_END_GUIDE.md)
 * [Developer Onboarding and Setup Guide (Windows and Mac)](file:///d:/SAP/DEVELOPER_GUIDE.md)
 * [Technical Architecture and Capabilities Reference](file:///d:/SAP/HOW_IT_WORKS.md)
 * [Clean ABAP Guidelines and Quality Safeguards](file:///d:/SAP/GEMINI.md)
 * [Autonomous Lifecycle Skill Specification](file:///d:/SAP/.agents/skills/abap-dev-lifecycle/SKILL.md)
+
 
